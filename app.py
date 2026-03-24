@@ -13,6 +13,12 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Base directory for relative paths
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+PROCESSED_DATA_PATH = os.path.join(DATA_DIR, "processed_eeg.csv")
+MODEL_PATH = os.path.join(DATA_DIR, "bci_model.pkl")
+
 # --- PAGE CONFIG ---
 st.set_page_config(
     page_title="BCI Cursor Control System",
@@ -61,7 +67,7 @@ if 'eeg_data' not in st.session_state:
     st.session_state.eeg_data = None
 
 preprocessor = EEGPreprocessor()
-model_handler = EEGModelHandler()
+model_handler = EEGModelHandler(model_path=MODEL_PATH)
 controller = BCIController()
 
 # Check for cloud/headless environment
@@ -148,10 +154,10 @@ if st.session_state.bci_active:
     
     # Load simulation data if not uploaded
     if st.session_state.eeg_data is None:
-        if os.path.exists('data/processed_eeg.csv'):
-            st.session_state.eeg_data = pd.read_csv('data/processed_eeg.csv')
+        if os.path.exists(PROCESSED_DATA_PATH):
+            st.session_state.eeg_data = pd.read_csv(PROCESSED_DATA_PATH)
         else:
-            st.error("Model data not found. Please wait for model training to finish.")
+            st.error(f"Model data not found at: {PROCESSED_DATA_PATH}. Please ensure the 'data' folder is uploaded to GitHub.")
             st.stop()
             
     # Simulate signal processing loop
